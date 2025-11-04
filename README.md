@@ -1,112 +1,146 @@
-# 🚌 University Bus Management System
+# DIU Bus Management System
 
-A comprehensive system to manage and track university transportation, improving efficiency and user experience for students, teachers, and staff.
+A database-driven, web-ready system to organize university transportation—covering routes, buses, seating, schedules, and maintenance.
 
----
-
-## 📋 Table of Contents
-
-- [The Problem](#-the-problem)
-- [The Solution](#-the-solution)
-- [Key Features](#-key-features)
-- [Tech Stack](#-tech-stack)
-- [Getting Started](#-getting-started)
-- [Usage](#-usage)
-- [Contributing](#-contributing)
-- [License](#-license)
-
----
-
-## 🎯 The Problem
-
-The existing university bus transportation system is disorganized and inefficient, creating a daily hassle for students, teachers, and staff. This disorganization negatively impacts punctuality, comfort, and overall satisfaction with the commute.
-
-The core issues this project aims to address are:
-
-* **Lack of Scheduling & Tracking:** There is no proper schedule or real-time route tracking. Users cannot see which bus is on which road or get an Estimated Time of Arrival (ETA) for their stop.
-* **Poor Reliability:** Buses frequently miss designated stops or arrive late, directly causing students to miss classes.
-* **Overcrowding:** A lack of available seats often forces students to stand for the entire journey.
-* **Seating Conflicts:** Teachers and staff do not have designated seating arrangements, leading to situations where students occupy their seats.
-* **Maintenance Issues:** Maintenance records are not tracked systematically, which can lead to unexpected and disruptive breakdowns.
-
----
-
-## 💡 The Solution
-
-**(Describe your project here. How does it solve the problems listed above?)**
-
-**Example:**
-This project provides a centralized platform with two main components:
-1.  **A mobile app** for students, teachers, and staff to view real-time bus locations, check schedules, and receive alerts.
-2.  **An admin dashboard** for the transport authority to manage routes, track bus maintenance, and communicate with users.
-
-Our solution introduces reliability, transparency, and comfort to the university commute.
+> Built for the Database Management System course (Course Code: 0612-303) at Dhaka International University.
 
 ---
 
 ## ✨ Key Features
 
-* **Real-Time GPS Tracking:** View the live location of all buses on a map.
-* **Dynamic ETAs:** Get accurate estimated times of arrival for any stop on the route.
-* **Digital Bus Schedules:** Access up-to-date bus routes, stops, and timings.
-* **Admin Management Panel:** A dashboard for administrators to:
-    * Manage bus routes and schedules.
-    * Track vehicle maintenance logs.
-    * Broadcast announcements or delay notifications.
-* **Seating Information:** Clearly display information on designated seating for faculty and staff.
-* **Notification System:** Send alerts for delays, schedule changes, or emergencies.
+- **Route & Bus Assignment:** Track which bus serves which route with distance and ETA fields.
+- **Seating & Priority:** Capacity-aware seat allocation with priority for teachers and staff.
+- **Schedules:** Day-wise arrival times per bus & route.
+- **Maintenance Logs:** Costs, issue descriptions, and next due dates (weak entity tied to `Bus`).
+- **Role Views:** Students, teachers, and admins access the data they need.
 
 ---
 
-## 🛠️ Tech Stack
+## 🧱 Data Model (ER → Relational)
 
-**(List the technologies, frameworks, and tools you are using.)**
+### Entities (PK 🔑, FK 🔗)
 
-**Example:**
-* **Mobile App:** Flutter / React Native / Swift
-* **Backend:** Node.js (Express) / Django / Spring Boot
-* **Database:** MongoDB / PostgreSQL / Firebase
-* **Maps & Geolocation:** Google Maps API / Mapbox
-* **Hosting:** Vercel / AWS / Heroku
+**Bus**  
+- `bus_id` 🔑, `bus_number`, `bus_type`, `capacity`, `registration_number`, `bus_name`
 
----
+**Route**  
+- `route_id` 🔑, `route_name`, `start_point`, `end_point`, `total_distance`, `estimate_time`, `bus_id` 🔗
 
-## 🚀 Getting Started
+**Student**  
+- `student_id` 🔑, `s_name`, `roll_number`, `department`, `phone_number`, `email`, `address`, `pickup_point`, `bus_id` 🔗, `route_id` 🔗
 
-Follow these instructions to get a copy of the project up and running on your local machine for development and testing.
+**Teacher**  
+- `teacher_id` 🔑, `t_name`, `department`, `phone_number`, `email`, `address`, `pickup_point`, `bus_id` 🔗, `route_id` 🔗
 
-### Prerequisites
+**Bus_Schedule**  
+- `schedule_id` 🔑, `bus_id` 🔗, `route_id` 🔗, `arrival_time`, `day_of_week`
 
-* (e.g., Node.js, Python, Java)
-* (e.g., npm, pip, Maven)
-* Git
-
-### Installation
-
-1.  Clone the repo
-    ```sh
-    git clone [https://github.com/your-username/your-repo-name.git](https://github.com/your-username/your-repo-name.git)
-    ```
-2.  Navigate to the project directory
-    ```sh
-    cd your-repo-name
-    ```
-3.  Install dependencies (example for a Node.js project)
-    ```sh
-    npm install
-    ```
-4.  Set up your environment variables
-    * Copy `.env.example` to `.env`
-    * Add your API keys (e.g., Google Maps, Database URI)
+**Maintenance** (Weak)  
+- `maintenance_id` 🔑, `bus_id` 🔗, `maintenance_date`, `maintenance_type`, `issue_description`, `cost`, `next_due_date`
 
 ---
 
-## Usage
+## 🗄️ SQL Schema (MySQL)
 
-**(Provide instructions on how to run and use the application.)**
+> You can run this in a fresh MySQL schema named `diu_bms`.
 
-**Example:**
+```sql
+CREATE DATABASE IF NOT EXISTS diu_bms;
+USE diu_bms;
 
-Run the development server:
-```sh
-npm run dev
+-- BUS
+CREATE TABLE Bus (
+  bus_id INT AUTO_INCREMENT PRIMARY KEY,
+  bus_number VARCHAR(20) NOT NULL,
+  bus_type ENUM('AC','Non-AC') NOT NULL DEFAULT 'Non-AC',
+  capacity INT NOT NULL CHECK (capacity > 0),
+  registration_number VARCHAR(50) UNIQUE NOT NULL,
+  bus_name VARCHAR(100) NOT NULL
+);
+
+-- ROUTE
+CREATE TABLE Route (
+  route_id INT AUTO_INCREMENT PRIMARY KEY,
+  route_name VARCHAR(100) NOT NULL,
+  start_point VARCHAR(100) NOT NULL,
+  end_point VARCHAR(100) NOT NULL,
+  total_distance DECIMAL(6,2) NOT NULL,
+  estimate_time TIME NOT NULL,
+  bus_id INT,
+  CONSTRAINT fk_route_bus
+    FOREIGN KEY (bus_id) REFERENCES Bus(bus_id)
+    ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- STUDENT
+CREATE TABLE Student (
+  student_id INT AUTO_INCREMENT PRIMARY KEY,
+  s_name VARCHAR(100) NOT NULL,
+  roll_number VARCHAR(50) UNIQUE NOT NULL,
+  department VARCHAR(100) NOT NULL,
+  phone_number VARCHAR(30),
+  email VARCHAR(120),
+  address VARCHAR(255),
+  pickup_point VARCHAR(120),
+  bus_id INT,
+  route_id INT,
+  CONSTRAINT fk_student_bus
+    FOREIGN KEY (bus_id) REFERENCES Bus(bus_id)
+    ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT fk_student_route
+    FOREIGN KEY (route_id) REFERENCES Route(route_id)
+    ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- TEACHER
+CREATE TABLE Teacher (
+  teacher_id INT AUTO_INCREMENT PRIMARY KEY,
+  t_name VARCHAR(100) NOT NULL,
+  department VARCHAR(100) NOT NULL,
+  phone_number VARCHAR(30),
+  email VARCHAR(120),
+  address VARCHAR(255),
+  pickup_point VARCHAR(120),
+  bus_id INT,
+  route_id INT,
+  CONSTRAINT fk_teacher_bus
+    FOREIGN KEY (bus_id) REFERENCES Bus(bus_id)
+    ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT fk_teacher_route
+    FOREIGN KEY (route_id) REFERENCES Route(route_id)
+    ON DELETE SET NULL ON UPDATE CASCADE
+);
+
+-- BUS_SCHEDULE
+CREATE TABLE Bus_Schedule (
+  schedule_id INT AUTO_INCREMENT PRIMARY KEY,
+  bus_id INT NOT NULL,
+  route_id INT NOT NULL,
+  arrival_time TIME NOT NULL,
+  day_of_week ENUM('Saturday','Sunday','Monday','Tuesday','Wednesday','Thursday','Friday') NOT NULL,
+  CONSTRAINT fk_sched_bus
+    FOREIGN KEY (bus_id) REFERENCES Bus(bus_id)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT fk_sched_route
+    FOREIGN KEY (route_id) REFERENCES Route(route_id)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- MAINTENANCE (Weak entity depends on BUS)
+CREATE TABLE Maintenance (
+  maintenance_id INT AUTO_INCREMENT PRIMARY KEY,
+  bus_id INT NOT NULL,
+  maintenance_date DATE NOT NULL,
+  maintenance_type VARCHAR(100) NOT NULL,
+  issue_description TEXT,
+  cost DECIMAL(10,2) NOT NULL DEFAULT 0,
+  next_due_date DATE,
+  CONSTRAINT fk_maint_bus
+    FOREIGN KEY (bus_id) REFERENCES Bus(bus_id)
+    ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- Useful indexes
+CREATE INDEX idx_student_route ON Student(route_id);
+CREATE INDEX idx_teacher_route ON Teacher(route_id);
+CREATE INDEX idx_schedule_day_bus ON Bus_Schedule(day_of_week, bus_id);
