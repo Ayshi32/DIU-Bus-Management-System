@@ -6,7 +6,7 @@ A database-driven, web-ready system to organize university transportation—cove
 
 ---
 
-## ✨ Key Features
+##  Key Features
 
 - **Route & Bus Assignment:** Assign which bus serves which route and store distance.
 - **Seating & Priority:** Capacity-aware seat allocation with priority for teachers.
@@ -16,7 +16,7 @@ A database-driven, web-ready system to organize university transportation—cove
 
 ---
 
-## 🧱 Data Model (ER → Relational)
+##  Data Model (ER → Relational)
 
 
 **Bus**  
@@ -39,7 +39,7 @@ A database-driven, web-ready system to organize university transportation—cove
 
 ---
 
-## 🗄️ SQL Schema (MySQL)
+##  SQL Schema (MySQL)
 
 > You can run this in a fresh MySQL schema named `diu_bms`.
 
