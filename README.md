@@ -145,7 +145,7 @@ CREATE INDEX idx_teacher_route ON Teacher(route_id);
 CREATE INDEX idx_schedule_day_bus ON Bus_Schedule(day_of_week, bus_id);
 
 
-## 👥 Contributors:
+##  Contributors:
 
 This project was developed by:
 
